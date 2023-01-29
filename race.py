@@ -1,18 +1,21 @@
 import pandas as pd
 import time
+from file import write_dict, read, write
 
 
 class Race:
     def __init__(self, race_id_list):
         self.race_id_list = race_id_list
+        self.downloaded_ids = read()
 
     def scrape_race_results(self):
-        race_results = {}
         for race_id in self.race_id_list:
-            try:
+            if race_id not in self.downloaded_ids:
                 url = f'https://db.netkeiba.com/race/{race_id}'
-                race_results[race_id] = pd.read_html(url)[0]
-                time.sleep(1)  # スクレイピング時の対象サイトへの負荷軽減
-            except:
-                break
-        return race_results
+                try:
+                    race_result = pd.read_html(url)[0]
+                except IndexError:
+                    continue
+                write(race_id)  # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
+                write_dict({race_id: race_result})
+                time.sleep(1)   # スクレイピング時の対象サイトへの負荷軽減
