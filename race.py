@@ -1,6 +1,6 @@
 import pandas as pd
 import time
-from file import write_dict, read, write
+from file import write_dict, read, write, read_dict
 
 
 class Race:
@@ -19,3 +19,14 @@ class Race:
                 write(race_id)  # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
                 write_dict({race_id: race_result})
                 time.sleep(1)   # スクレイピング時の対象サイトへの負荷軽減
+
+    @staticmethod
+    def get_all_races():
+        all_races = read_dict()
+
+        for k, v in all_races.items():
+            v.index = [k] * len(v)
+
+        results = pd.concat([v for v in all_races.values()], sort=False)
+        results.to_pickle('df.pickle')
+        return pd.read_pickle('df.pickle')
