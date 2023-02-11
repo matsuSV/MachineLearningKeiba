@@ -7,26 +7,41 @@ class Race:
     def __init__(self, race_id_list):
         self.race_id_list = race_id_list
         self.downloaded_ids = read()
+        self.all_races = pd.DataFrame(index=[], columns=[])
 
-    def scrape_race_results(self):
-        for race_id in self.race_id_list:
-            if race_id not in self.downloaded_ids:
-                url = f'https://db.netkeiba.com/race/{race_id}'
+    def get_results(self) -> pd.DataFrame:
+        self._scrape()
+        self._make_df()
+        return self.all_races
+
+    def _scrape(self):
+        for id in self.race_id_list:
+            if id not in self.downloaded_ids:
+                url = f'https://db.netkeiba.com/race/{id}'
                 try:
-                    race_result = pd.read_html(url)[0]
+                    result = pd.read_html(url)[0]
                 except IndexError:
                     continue
-                write(race_id)  # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
-                write_dict({race_id: race_result})
-                time.sleep(1)   # スクレイピング時の対象サイトへの負荷軽減
 
-    @staticmethod
-    def get_all_races():
+                # TODO
+                # トランザクション処理できるか？
+                # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
+                result.index = [id] * len(result)
+                content = {id: result}
+                content.update(read_dict())
+
+                write(id)
+                write_dict(content)
+                time.sleep(0.5)  # スクレイピング時の対象サイトへの負荷軽減
+
+    def _make_df(self):
         all_races = read_dict()
 
-        for k, v in all_races.items():
-            v.index = [k] * len(v)
+        # 各レースのDataFrameを繋げて1つのDataFrameとする
+        results = pd.concat(list(all_races.values()), sort=False)
 
-        results = pd.concat([v for v in all_races.values()], sort=False)
+        # ファイルに出力して永続化（pickle系のメソッドを使ってみたかっただけ）
         results.to_pickle('df.pickle')
-        return pd.read_pickle('df.pickle')
+        self.all_races = pd.read_pickle('df.pickle')
+
+    # def pre_processing():

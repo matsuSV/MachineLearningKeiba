@@ -12,7 +12,6 @@ def read():
 
 
 def write_dict(content):
-    content.update(read_dict())
     with open('result.pickle', 'wb') as f:
         pickle.dump(content, f, protocol=pickle.HIGHEST_PROTOCOL)
 
