@@ -44,4 +44,26 @@ class Race:
         results.to_pickle('df.pickle')
         self.all_races = pd.read_pickle('df.pickle')
 
-    # def pre_processing():
+    @staticmethod
+    def pre_processing(results):
+        df = results.copy()
+
+        # 着順に数字以外の文字列が含まれているものを取り除く
+        df = df[~(df['着 順'].astype(str).str.contains("\\D"))]
+        df['着 順'] = df['着 順'].astype(int)
+
+        # 年齢を性と年齢に分ける
+        df['性'] = df['性齢'].map(lambda x: str(x)[0])
+        df['年齢'] = df['性齢'].map(lambda x: str(x)[1]).astype(int)
+
+        # 馬体重が現体重(±増減値)という表記なので体重と体重変化に分ける
+        df['体重'] = df['馬体重'].str.split("(", expand=True)[0].astype(int)
+        df['体重変化'] = df['馬体重'].str.split("(", expand=True)[1].str[:-1].astype(int)
+
+        # データをint, floatへ変換する
+        df['単勝'] = df['単勝'].astype(float)
+
+        # 不要な列を削除する
+        df.drop(['タイム', '着差', '調教師', '性齢', '馬体重'], axis=1, inplace=True)
+
+        return df
