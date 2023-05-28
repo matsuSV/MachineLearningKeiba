@@ -67,3 +67,23 @@ class Race:
         df.drop(['タイム', '着差', '調教師', '性齢', '馬体重'], axis=1, inplace=True)
 
         return df
+
+    @staticmethod
+    def clip_out_of_returns(results):
+        """
+        分析用で4着以下を4着として扱う
+        """
+        df = results.copy()
+        df['rank'] = df['着 順'].map(lambda x: x if x < 4 else 4)
+
+        return df
+
+    @staticmethod
+    def get_dummies(results):
+        """
+        データフレームをダミー変数化する
+        """
+        df = results.copy()
+        df.drop(['着 順', '馬名'], axis=1, inplace=True)
+
+        return pd.get_dummies(df)
