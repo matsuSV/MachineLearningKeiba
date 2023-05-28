@@ -1,8 +1,11 @@
+import pandas as pd
+
 from race import Race
 from place import Place
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from imblearn.under_sampling import RandomUnderSampler
 
 # レースidを生成する
 place = Place("2019")
@@ -38,3 +41,15 @@ model.fit(X_train, y_train)
 
 # 訓練データ（左）、テストデータ（右）
 print(model.score(X_train, y_train), model.score(X_test, y_test))
+
+# ほとんどのデータが4なので4と予測してしまう→不均衡データと呼ばれる→なのでアンダーサンプリングを行う
+print(model.predict(X_test))
+print(y_train.value_counts())
+
+# データをn:nにしてください
+rank_1 = y_train.value_counts()[1]
+rank_2 = y_train.value_counts()[2]
+rank_3 = y_train.value_counts()[3]
+rus = RandomUnderSampler(sampling_strategy={1:rank_1,2:rank_2, 3:rank_3, 4:rank_1}, random_state=71)
+X_train_rus, y_train_rus = rus.fit_resample(X_train, y_train)
+print(pd.Series(y_train_rus).value_counts())
