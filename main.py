@@ -21,11 +21,11 @@ print(test)
 
 # 1,2,3着と4着以下に分類されていること
 cliped = race.clip_out_of_returns(result)
-#print(cliped['rank'].value_counts())
+# print(cliped['rank'].value_counts())
 
 droped = race.get_dummies(cliped)
 
-## 分析
+# 分析
 # 説明変数
 X = droped.drop(['rank'], axis=1)
 
@@ -50,6 +50,25 @@ print(y_train.value_counts())
 rank_1 = y_train.value_counts()[1]
 rank_2 = y_train.value_counts()[2]
 rank_3 = y_train.value_counts()[3]
-rus = RandomUnderSampler(sampling_strategy={1:rank_1,2:rank_2, 3:rank_3, 4:rank_1}, random_state=71)
+rus = RandomUnderSampler(sampling_strategy={1: rank_1, 2: rank_2, 3: rank_3, 4: rank_1}, random_state=71)
 X_train_rus, y_train_rus = rus.fit_resample(X_train, y_train)
 print(pd.Series(y_train_rus).value_counts())
+
+# 実際に予測をしてみる
+model = LogisticRegression(max_iter=10000)
+model.fit(X_train_rus, y_train_rus)
+print(model.score(X_train, y_train), model.score(X_test, y_test))
+
+y_pred = model.predict(X_test)
+pred_df = pd.DataFrame({'pred': y_pred, 'actual': y_test})
+print(pred_df)
+
+# 1着に来ると予測された馬を見てみる
+print(pred_df[pred_df['pred']==1]['actual'].value_counts())
+print(len(pred_df[pred_df['pred']==1]))
+print("--------------------------------------------------------------------------")
+# 4着以下になると予測されたもの(だけど実際は～だったよ、って感じ)
+print(pred_df[pred_df['pred']==4]['actual'].value_counts())
+
+# ロジスティックス回帰のいいところとして、この予測がどういう仕組みで行えたかということが分かりやすい
+print(model.coef_)  # 回帰変数全体を見ることができる
