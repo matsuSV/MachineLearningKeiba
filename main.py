@@ -71,4 +71,18 @@ print("-------------------------------------------------------------------------
 print(pred_df[pred_df['pred']==4]['actual'].value_counts())
 
 # ロジスティックス回帰のいいところとして、この予測がどういう仕組みで行えたかということが分かりやすい
-print(model.coef_)  # 回帰変数全体を見ることができる
+# print(model.coef_)  # 回帰変数全体を見ることができる
+
+# このままだと見づらいのでこうする
+coefs = pd.Series(model.coef_[0], index=X.columns).sort_values()
+print(coefs)
+
+print(cliped.columns)
+print(droped.columns)
+jockey_iwata = cliped[cliped['騎手']=='岩田康誠']
+print(jockey_iwata)
+print(jockey_iwata['rank'].value_counts())
+print(X.columns)
+print(coefs[['枠 番', '馬 番', '斤量', '単勝', '人 気']])
+
+# 過去のデータを使って未来のデータを予測したい！
