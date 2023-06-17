@@ -1,9 +1,13 @@
 import pandas as pd
 import time
-from file import write_dict, read, write, read_dict
+from file import write_dict, read, write, read_dict, to_pickle
 
 
 class Race:
+    """
+    レースIDを受け取り、そのレース結果をWebサイトから取得します
+    """
+
     def __init__(self, race_id_list):
         self.race_id_list = race_id_list
         self.downloaded_ids = read()
@@ -11,10 +15,15 @@ class Race:
 
     def get_results(self) -> pd.DataFrame:
         self._scrape()
-        self._make_df()
+        self._concat_df()
         return self.all_races
 
     def _scrape(self):
+        """
+        レースIDを元にネット競馬サイトのHTMLページにあるレース結果のTable要素をDataFrameとして取得します
+
+        :return:
+        """
         for id in self.race_id_list:
             if id not in self.downloaded_ids:
                 url = f'https://db.netkeiba.com/race/{id}'
@@ -23,29 +32,51 @@ class Race:
                 except IndexError:
                     continue
 
-                # TODO
-                # トランザクション処理できるか？
-                # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
-                result.index = [id] * len(result)
-                content = {id: result}
-                content.update(read_dict())
+                self._save_df(result)
 
-                write(id)
-                write_dict(content)
-                time.sleep(0.5)  # スクレイピング時の対象サイトへの負荷軽減
+    @staticmethod
+    def _save_df(result):
+        """
+        レース結果をIDとデータのKey＆Valueにしてローカルファイルへ保持します
 
-    def _make_df(self):
+        :param result:
+        :return:
+        """
+        # TODO
+        # トランザクション処理できるか？
+        # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
+        result.index = [id] * len(result)
+        content = {id: result}
+        content.update(read_dict())
+
+        # レースIDのみとレースID＆レース結果で分けて保持して、レースIDのみファイルを参照することで既に取得済みのレース結果を再取得させない
+        write(id)
+        write_dict(content)
+        time.sleep(0.5)  # スクレイピング時の対象サイトへの負荷軽減
+
+    def _concat_df(self):
+        """
+        取得したレース結果を解析用に１つのDataFrameとします
+        pickleとしてローカルファイルへ保持します（趣味で）
+
+        :return:
+        """
         all_races = read_dict()
 
         # 各レースのDataFrameを繋げて1つのDataFrameとする
         results = pd.concat(list(all_races.values()), sort=False)
 
         # ファイルに出力して永続化（pickle系のメソッドを使ってみたかっただけ）
-        results.to_pickle('df.pickle')
-        self.all_races = pd.read_pickle('df.pickle')
+        self.all_races = to_pickle(results)
 
     @staticmethod
     def pre_processing(results):
+        """
+        解析しやすいように各情報を整形します
+
+        :param results:
+        :return:
+        """
         df = results.copy()
 
         # 着順に数字以外の文字列が含まれているものを取り除く
