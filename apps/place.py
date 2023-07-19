@@ -10,9 +10,9 @@ class Place:
     def __init__(self, target_year):
         self.year = target_year
 
-    def make_race_id_list(self):
+    def generate_race_ids(self):
         """
-        開催年度中のレースIDを生成します
+        開催年度中の全レースID(例：201901010103)を生成します
 
         :return: レースIDの配列
         """
@@ -26,11 +26,12 @@ class Place:
         # 08:京都
         # 09:阪神
         # 10:小倉
-        race_id_list = []
-        for venue in range(1, 11, 1):  # 例）中山開催
-            for term in range(1, 6, 1):  # 例）第1回(中山開催)
-                for round in range(1, 9, 1):  # 例）(第1回中山開催)1日目
-                    for race in range(1, 13, 1):  # 例）(第1回中山開催1日目)1レース
-                        race_id = self.year + str(venue).zfill(2) + str(term).zfill(2) + str(round).zfill(2) + str(race).zfill(2)
-                        race_id_list.append(race_id)
-        return race_id_list
+        return [self._zf2(self.year, venue, term, stage, race)  # レースID
+                for venue in range(1, 11)  # 例）中山開催
+                for term in range(1, 6)    # 例）(中山開催) 第1回
+                for stage in range(1, 9)   # 例）(中山開催 第1回) 1日目
+                for race in range(1, 13)]  # 例）(中山開催 第1回 1日目) 1レース
+
+    @staticmethod
+    def _zf2(*args):
+        return ''.join(str(arg).zfill(2) for arg in args)

@@ -7,9 +7,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 
-# レースidを生成する
+# 対象年度を指定してレースidを生成する
 place = Place("2019")
-race_ids = place.make_race_id_list()
+race_ids = place.generate_race_ids()
 
 # レース結果を取得する
 race = Race(['201901010101', '201901010102', '201901010103'])  # 実装確認用
