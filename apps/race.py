@@ -10,56 +10,67 @@ class Race:
 
     def __init__(self, race_id_list):
         self.race_id_list = race_id_list
-        self.downloaded_ids = file.read()
-        self.all_races = pd.DataFrame(index=[], columns=[])
 
     def get_results(self) -> pd.DataFrame:
-        self._scrape()
-        self._concat_df()
-        return self.all_races
-
-    def _scrape(self):
-        """
-        レースIDを元にネット競馬サイトのHTMLページにあるレース結果のTable要素をDataFrameとして取得します
-        """
+        downloaded_ids = file.read()
         for race_id in self.race_id_list:
-            if race_id not in self.downloaded_ids:
-                try:
-                    result = pd.read_html(f'https://db.netkeiba.com/race/{race_id}')[0]
-                except IndexError:
-                    continue
+            if race_id not in downloaded_ids:
+                result = self._scrape(race_id)
+                if not result.empty:
+                    classified = self._classify(race_id, result)
+                    all_races = self._get_latest_races(classified)
+                    self._save(all_races)
 
-                self._save_df(result)
+        return file.to_pickle(self._create_df())  # pickle関数を使ってみたかった
 
     @staticmethod
-    def _save_df(result):
+    def _scrape(race_id):
         """
-        レース結果をIDとデータのKey＆Valueにしてローカルファイルへ保持します
-
-        :param result: サイトからスクレイピングした結果
+        レースIDを元にネット競馬サイトからレース結果のTable要素をDataFrameとして取得する
+        スクレイピング時の対象サイトへの負荷軽減を考慮している
         """
-        # TODO
-        # トランザクション処理できるか？
-        # レース情報を取得できたら取得済みレースIDとしてファイル保持する（何回も取得させないため）
-        result.index = [id] * len(result)
-        content = {id: result}
-        content.update(read_all_races())
+        time.sleep(0.25)
+        try:
+            return pd.read_html(f'https://db.netkeiba.com/race/{race_id}')[0]
+        except IndexError:
+            return pd.DataFrame()
 
-        # レースIDのみとレースID＆レース結果で分けて保持して、レースIDのみファイルを参照することで既に取得済みのレース結果を再取得させない
-        write(id)
-        write_races(content)
-        time.sleep(0.5)  # スクレイピング時の対象サイトへの負荷軽減
-
-    def _concat_df(self):
+    @staticmethod
+    def _classify(race_id, result):
         """
-        取得したレース結果を解析用に１つのDataFrameとします
-        pickleとしてローカルファイルへ保持します（趣味で）
-        """
-        # 各レースのDataFrameを繋げて1つのDataFrameとする
-        results = pd.concat(list(read_all_races().values()), sort=False)
+        レース結果のインデックスをレースIDへ差し替える
 
-        # ファイルに出力して永続化（pickle系のメソッドを使ってみたかっただけ）
-        self.all_races = to_pickle(results)
+        :param race_id: 生成したレースID
+        :param result : サイトからスクレイピングした結果
+        """
+        result.index = [race_id] * len(result)
+        return {race_id: result}
+
+    @staticmethod
+    def _get_latest_races(race):
+        """
+
+        :param race:
+        :return:
+        """
+        race.update(file.read_all_races())
+        return race
+
+    @staticmethod
+    def _save(race_id, all_races):
+        """
+        レースIDのみとレースID＆レース結果でファイルを分けて保持する
+        レースIDのみを保持しているファイルを参照することで取得済みのレース結果は再取得させない意図
+        """
+        file.write(race_id)
+        file.write_races(all_races)
+
+    @staticmethod
+    def _create_df():
+        """
+        取得したレース結果を解析用に１つのDataFrameとして取得する
+        """
+        return pd.concat(list(file.read_all_races().values()), sort=False)
 
     @staticmethod
     def pre_processing(results):
