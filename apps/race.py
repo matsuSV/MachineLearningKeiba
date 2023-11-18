@@ -19,7 +19,7 @@ class Race:
                 if not result.empty:
                     classified = self._classify(race_id, result)
                     all_races = self._get_latest_races(classified)
-                    self._save(all_races)
+                    self._save(race_id, all_races)
 
         return file.to_pickle(self._create_df())  # pickle関数を使ってみたかった
 
@@ -39,6 +39,7 @@ class Race:
     def _classify(race_id, result):
         """
         レース結果のインデックスをレースIDへ差し替える
+        (後続処理をし易くするため)
 
         :param race_id: 生成したレースID
         :param result : サイトからスクレイピングした結果
