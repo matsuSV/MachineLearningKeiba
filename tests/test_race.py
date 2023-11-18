@@ -42,6 +42,10 @@ def test__scrape():
 
 
 def test__classify():
+    """
+    期待動作：
+    　 取得したデータフレームのインデックスがレースIDに差し替わっていること
+    """
     race = apps_race.Race(['201901010101'])
     test_scraped = pd.read_csv('csv/test__scrape.csv')
     test_scraped.index = ['201901010101'] * len(test_scraped)
