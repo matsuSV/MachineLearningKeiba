@@ -50,9 +50,10 @@ class Race:
     @staticmethod
     def _get_latest_races(race):
         """
+        現状取得できる全レース結果を返却する
 
-        :param race:
-        :return:
+        :param race: キーにレースID、値にインデックスをレースIDにしたデータフレームとなっているdict型の値
+        :return: 既に取得済みのレース結果を合わせたdict型の値
         """
         race.update(file.read_all_races())
         return race

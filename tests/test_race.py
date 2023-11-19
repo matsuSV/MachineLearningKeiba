@@ -51,5 +51,38 @@ def test__classify():
     test_scraped.index = ['201901010101'] * len(test_scraped)
 
     actual_result = race._classify('201901010101', test_scraped)
+    expect_result = {'201901010101': test_scraped}
     # ↓の比較で出来ていると思う( ´∀｀ )
-    assert all((k, v) in actual_result.items() for (k, v) in {'201901010101': test_scraped}.items())
+    assert all((k, v) in actual_result.items() for (k, v) in expect_result.items())
+
+
+def test__get_latest_races():
+    """
+    期待動作：
+    　 {レースID: インデックスをレースIDにしたデータフレーム}の構成のdict型であること
+    """
+    test_201901010101 = pd.read_csv('csv/test__scrape.csv')
+    test_201901010102 = pd.read_csv('csv/test__scrape.csv')
+
+    test_201901010101.index = ['201901010101'] * len(test_201901010101)
+    test_201901010102.index = ['201901010102'] * len(test_201901010102)
+
+    with patch('apps.file.read_all_races', return_value={'201901010101': test_201901010101}):
+        race = apps_race.Race(['201901010101'])
+        actual_result = race._get_latest_races({'201901010102': test_201901010102})
+        expect_result = {'201901010101': test_201901010101, '201901010102': test_201901010102}
+        assert all((k, v) in actual_result.items() for (k, v) in expect_result.items())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
