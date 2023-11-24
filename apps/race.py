@@ -12,6 +12,9 @@ class Race:
         self.race_id_list = race_id_list
 
     def get_results(self) -> pd.DataFrame:
+        """
+        サイトからレース結果情報を取得してローカルファイルへ保持する
+        """
         downloaded_ids = file.read()
         for race_id in self.race_id_list:
             if race_id not in downloaded_ids:
