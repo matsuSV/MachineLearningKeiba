@@ -4,6 +4,23 @@ from pandas.util.testing import assert_frame_equal
 from unittest.mock import patch
 
 
+def test_search_scrape():
+    """
+    レース結果取得用のメソッド
+    """
+    print(apps_race.Race._scrape('201905020102'))
+    print(apps_race.Race._scrape('201905020103'))
+    print(apps_race.Race._scrape('201905020104'))
+    print(apps_race.Race._scrape('201905020105'))
+    print(apps_race.Race._scrape('201905020106'))
+    print(apps_race.Race._scrape('202005020106'))
+    print(apps_race.Race._scrape('202205020106'))
+    print(apps_race.Race._scrape('202205020106'))
+    print(apps_race.Race._scrape('202205020106'))
+    print(apps_race.Race._scrape('202205020106'))
+    print(apps_race.Race._scrape('202205020106'))
+
+
 def test__init__():
     """
     期待動作：
@@ -99,17 +116,3 @@ def test__create_df():
         expect_df = pd.read_csv('csv/test__create_df.csv', index_col=0, dtype={0: object})
         expect_df.index.name = None
         assert_frame_equal(actual_df, expect_df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-

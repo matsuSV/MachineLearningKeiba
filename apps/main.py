@@ -11,11 +11,11 @@ from imblearn.under_sampling import RandomUnderSampler
 place = Place("2019")
 race_ids = place.generate_race_ids()
 
-### unit test developed
-
 # レース結果を取得する
 race = Race(['201901010101', '201901010102', '201901010103'])  # 実装確認用
 result = race.get_results()
+
+### unit test developed
 
 # レース結果を整形する
 test = race.pre_processing(result)
