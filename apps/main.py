@@ -1,5 +1,6 @@
 import pandas as pd
 
+from process import Process
 from race import Race
 from place import Place
 
@@ -18,21 +19,16 @@ result = race.get_results()
 ### unit test developed
 
 # レース結果を整形する
-test = race.pre_processing(result)
-print(test)
-
-# 1,2,3着と4着以下に分類されていること
-cliped = race.clip_out_of_returns(result)
-# print(cliped['rank'].value_counts())
-
-droped = race.get_dummies(cliped)
+process = Process(result)
+processed = process.pre_processing()
+dropped = process.get_dummies(processed)
 
 # 分析
 # 説明変数
-X = droped.drop(['rank'], axis=1)
+X = dropped.drop(['rank'], axis=1)
 
 # 目的変数
-y = droped['rank']
+y = dropped['rank']
 
 # オプションのstratifyは均等に散らばるようにする命令
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.3, random_state=0)
@@ -79,9 +75,9 @@ print(pred_df[pred_df['pred']==4]['actual'].value_counts())
 coefs = pd.Series(model.coef_[0], index=X.columns).sort_values()
 print(coefs)
 
-print(cliped.columns)
-print(droped.columns)
-jockey_iwata = cliped[cliped['騎手']=='岩田康誠']
+print(processed.columns)
+print(dropped.columns)
+jockey_iwata = processed[processed['騎手'] == '岩田康誠']
 print(jockey_iwata)
 print(jockey_iwata['rank'].value_counts())
 print(X.columns)

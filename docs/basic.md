@@ -49,6 +49,8 @@ Raceクラス
 5. 不要な列を削除する
 
 # 単体試験とカバレッジ計測
+IDE上でtestsフォルダを右クリックして実行する必要がある。
+下記だとファイル読み込みパスが異なる階層となるため
 (venv) PS C:\Users\shota\PycharmProjects\MachineLearningKeiba> pytest
 
 (venv) PS C:\Users\shota\PycharmProjects\MachineLearningKeiba> coverage run -m pytest
